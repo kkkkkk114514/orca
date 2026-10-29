@@ -16,6 +16,8 @@ const buttonVariants = cva(
           'border border-border bg-background text-foreground shadow-xs hover:border-muted-foreground/35 hover:bg-accent hover:text-accent-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50',
         secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
         ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
+        sidebar:
+          'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground data-[current=true]:bg-sidebar-accent data-[current=true]:text-sidebar-accent-foreground focus-visible:ring-sidebar-ring',
         link: 'text-primary underline-offset-4 hover:underline',
         // The worktree card's "rename failed" chip, for a failure the user can open.
         'destructive-chip':

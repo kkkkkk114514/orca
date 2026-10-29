@@ -31,6 +31,7 @@ import type { TuiAgent } from '../../../../../shared/tui-agent'
 import { isTuiAgent } from '../../../../../shared/tui-agent-config'
 import { LOCAL_EXECUTION_HOST_ID } from '../../../../../shared/execution-host'
 import { forgetDesktopCreatedServerTab } from '@/lib/desktop-created-server-tabs'
+import { isReadOnlySessionView } from '../../../../../shared/workspace-session-history'
 
 export function createTabsCloseActions(
   set: TabsSliceSet,
@@ -63,7 +64,7 @@ export function createTabsCloseActions(
       const dedupedGroupOrder = dedupeTabOrder(groupOrder)
       const remainingOrder = dedupeTabOrder(dedupedGroupOrder.filter((id) => id !== tabId))
       const wasLastTab = remainingOrder.length === 0
-      if (tab.contentType === 'agent-session') {
+      if (tab.contentType === 'agent-session' && !isReadOnlySessionView(tab.entityId)) {
         const provisional =
           shouldRetainStructuredAgentSessionLaunchTab(worktreeId, tab.entityId) ||
           hasStructuredAgentSessionLaunchCancellationTombstone(worktreeId, tab.entityId)
@@ -202,6 +203,7 @@ export function createTabsCloseActions(
       // Switch point: main closes an editor, browser, chat or simulator tab first; its frame drops it.
       if (
         ORCA_LAYOUT_OWNER_IS_MAIN &&
+        !isReadOnlySessionView(tab.entityId) &&
         closeContentTabThroughLayoutOwner(get, tab, {
           nextActiveTabId,
           closeHere,

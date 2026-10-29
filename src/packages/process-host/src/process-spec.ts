@@ -46,6 +46,8 @@ export type ProcessSpec = {
   onChildTerminated?: () => void
   /** Every raw stderr chunk as it arrives, including any past the capture cap. */
   onStderr?: (chunk: Buffer | string) => void
+  /** Every raw stdout chunk as it arrives, including any past the capture cap. */
+  onStdout?: (chunk: Buffer | string) => void
 }
 
 export type PipedChildProcess = ChildProcessWithoutNullStreams

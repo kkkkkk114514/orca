@@ -129,10 +129,10 @@ export function activateAndRevealFolderWorkspace(
         shouldAutoCreateInitialTerminal(
           state.reconcileWorktreeTabModel(workspaceKey).renderableTabCount
         )))
-  if (!shouldGateAgentActivation) {
+  if (!shouldGateAgentActivation && opts?.restoreAgentSessions !== false) {
     resumeSleepingAgentSessionsForWorktree(workspaceKey)
   }
-  if (shouldGateAgentActivation) {
+  if (shouldGateAgentActivation && opts?.restoreAgentSessions !== false) {
     gateAndReseedEmptyWorkspace(workspaceKey, {
       callerProvidesSurface: opts?.providesInitialSurface === true,
       seedUserDefaultSurface,
@@ -244,13 +244,13 @@ export function activateAndRevealWorktree(
         shouldAutoCreateInitialTerminal(
           postActivationState.reconcileWorktreeTabModel(worktreeId).renderableTabCount
         )))
-  if (!shouldGateAgentActivation) {
+  if (!shouldGateAgentActivation && opts?.restoreAgentSessions !== false) {
     // Why: sleeping destroys the local PTY but preserves the provider session id, so waking should
     // restore those CLI sessions. Ordering is load-bearing: resuming synchronously creates the
     // session's tab first, so the seeding below doesn't add a bare shell next to it.
     resumeSleepingAgentSessionsForWorktree(worktreeId)
   }
-  if (shouldGateAgentActivation) {
+  if (shouldGateAgentActivation && opts?.restoreAgentSessions !== false) {
     gateAndReseedEmptyWorkspace(worktreeId, {
       callerProvidesSurface: opts?.providesInitialSurface === true,
       seedUserDefaultSurface,

@@ -80,6 +80,20 @@ afterEach(() => {
 })
 
 describe('closing a structured chat from outside its workspace', () => {
+  it.each([
+    'workflow-view:00000000-0000-4000-8000-000000000001:develop',
+    `workspace-history:${'a'.repeat(64)}`
+  ])('closes read-only record %s without retiring its worker or provider session', (entityId) => {
+    const tab = {
+      ...chatTab('runtime:server-1'),
+      entityId
+    }
+    const store = storeWith(tab)
+    store.getState().closeUnifiedTab(tab.id)
+    expect(mocks.beginClose).not.toHaveBeenCalled()
+    expect(store.getState().unifiedTabsByWorktree[WORKTREE]).toEqual([])
+  })
+
   it('stops it on the host stamped on its tab, not on whichever host shares its id', () => {
     const store = storeWith(chatTab('runtime:server-1'))
 

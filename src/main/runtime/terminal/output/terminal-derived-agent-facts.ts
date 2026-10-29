@@ -146,6 +146,13 @@ export abstract class OrcaRuntimeWithCreateTerminalSideEffectCommandCodeDetector
         mapExplicitAgentStateToRuntimeTerminalStatus(payload.state)
       )
       for (const target of targets) {
+        if (payload.interrupted) {
+          const handle =
+            target.terminalHandle ?? this.getAgentStatusTerminalHandleForPaneKey(target.paneKey)
+          if (handle) {
+            notifyWorkflowAgentInterrupted(this, handle)
+          }
+        }
         if (!this.onTerminalAgentStatus) {
           continue
         }
@@ -261,3 +268,4 @@ export abstract class OrcaRuntimeWithCreateTerminalSideEffectCommandCodeDetector
     return [...targets.values()]
   }
 }
+import { notifyWorkflowAgentInterrupted } from '../../workflows/workflow-interrupt-events'

@@ -1,3 +1,8 @@
+import {
+  parseWorkspaceHistoryView,
+  isReadOnlySessionView
+} from '../../../../shared/workspace-session-history'
+import { WorkspaceSessionHistoryView } from '../sidebar/WorkspaceSessionHistoryView'
 import { memo, useCallback, useMemo } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { Tab, TabGroup } from '../../../../shared/tab-types'
@@ -9,6 +14,8 @@ import {
 import { RetainedPaneHost } from '../tab-group/RetainedPaneHost'
 import NativeChatView from './NativeChatView'
 import { isStructuredTab } from '../../../../shared/structured-agent-session-tab'
+import { parseWorkflowSessionView } from '../../../../shared/workflow-session-view'
+import { WorkflowSessionView } from '../workflow-canvas/WorkflowSessionView'
 
 type StructuredAgentSessionTab = Tab & {
   contentType: 'agent-session'
@@ -37,6 +44,7 @@ const StructuredAgentSessionOverlaySlot = memo(function StructuredAgentSessionOv
   // hosts can share.
   const owner = useAppStore((state) => structuredAgentSessionOwnerForTab(state, tab))
   const target = useMemo(() => structuredAgentSessionTargetForHost(owner), [owner])
+  const workflow = parseWorkflowSessionView(tab.entityId)
   if (!target) {
     return null
   }
@@ -48,16 +56,39 @@ const StructuredAgentSessionOverlaySlot = memo(function StructuredAgentSessionOv
       data-structured-agent-session-overlay-tab-id={tab.id}
       onFocusOwningGroup={onFocusOwningGroup}
     >
-      <NativeChatView
-        mode="structured"
-        tabId={tab.id}
-        groupId={groupId}
-        sessionId={tab.entityId}
-        agent={tab.agentSessionAgent}
-        isVisible={isActive}
-        isFocusedGroup={isFocusedGroup}
-        target={target}
-      />
+      {workflow ? (
+        <WorkflowSessionView
+          {...workflow}
+          title={tab.customLabel ?? tab.label}
+          workspaceId={tab.worktreeId}
+          target={target}
+          visible={isActive}
+          interactive
+        />
+      ) : parseWorkspaceHistoryView(tab.entityId) ? (
+        <WorkspaceSessionHistoryView
+          sessionKey={parseWorkspaceHistoryView(tab.entityId) ?? ''}
+          workspaceId={tab.worktreeId}
+          target={target}
+          visible={isActive}
+          title={tab.customLabel ?? tab.label}
+        />
+      ) : isReadOnlySessionView(tab.entityId) ? (
+        <p role="alert" className="p-4 text-xs text-destructive">
+          Invalid workflow session reference
+        </p>
+      ) : (
+        <NativeChatView
+          mode="structured"
+          tabId={tab.id}
+          groupId={groupId}
+          sessionId={tab.entityId}
+          agent={tab.agentSessionAgent}
+          isVisible={isActive}
+          isFocusedGroup={isFocusedGroup}
+          target={target}
+        />
+      )}
     </RetainedPaneHost>
   )
 })
@@ -87,7 +118,14 @@ const StructuredAgentSessionPaneOverlayLayer = memo(
       [groups]
     )
     const structuredTabs = useMemo(
-      () => unifiedTabs.filter((tab): tab is StructuredAgentSessionTab => isStructuredTab(tab)),
+      () =>
+        unifiedTabs.filter(
+          (tab): tab is StructuredAgentSessionTab =>
+            isStructuredTab(tab) ||
+            (tab.contentType === 'agent-session' &&
+              Boolean(tab.agentSessionAgent) &&
+              isReadOnlySessionView(tab.entityId))
+        ),
       [unifiedTabs]
     )
 

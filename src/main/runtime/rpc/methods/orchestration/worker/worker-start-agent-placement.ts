@@ -15,6 +15,7 @@
 
 import type { AgentLaunchPreferences } from '../../../../../../shared/agent-session-host-authority'
 import type { TuiAgent } from '../../../../../../shared/tui-agent'
+import type { WorkflowResolvedConversation } from '../../../../../../shared/workflow-node-conversation'
 import { executeAgentLaunch } from '../../../../../agent-launch/agent-launch-executor'
 import type { AgentLaunchSurfaceFactory } from '../../../../../agent-launch/agent-launch-surface-factories'
 import type { OrcaRuntimeService } from '../../../../orca-runtime'
@@ -63,6 +64,7 @@ type WorkerAgentPlacementArgs = {
   mode: WorkerStartModeReceipt
   agent: TuiAgent | undefined
   launchPreferences: AgentLaunchPreferences | undefined
+  conversation?: WorkflowResolvedConversation
   effects: WorkerEffect[]
   /** Attributes a throw to the step that was running, the way the caller's own stages do. */
   onStage: (stage: string) => void
@@ -118,9 +120,10 @@ async function launchWorkerAgent(
         target: existing
           ? { kind: 'existing', worktree: existing.id }
           : { kind: 'create-worktree', create: {} },
-        launchSource: 'orchestration'
+        launchSource: 'orchestration',
+        ...(args.conversation ? { surface: 'terminal' as const } : {})
       },
-      decidedMode: args.mode,
+      ...(args.conversation ? {} : { decidedMode: args.mode }),
       vocabulary: WORKER_START_VOCABULARY,
       onStage: (stage) =>
         args.onStage(stage === 'worktree_create' ? 'worktree_create' : 'terminal_create'),
@@ -221,6 +224,7 @@ function workerSurfaceFactory(
         runtime: args.runtime,
         worktreeId,
         agent,
+        conversation: args.conversation,
         ...(args.launchPreferences ? { launchPreferences: args.launchPreferences } : {}),
         taskId: args.taskId,
         effects: args.effects

@@ -24,6 +24,7 @@ import { captureWebSessionIntentOwner } from './web-runtime-session-environment'
 import { callRuntimeRpc } from './runtime-rpc-client'
 import type { RuntimeClientTarget } from '../../../shared/runtime-client-target'
 import { toRuntimeWorktreeSelector } from './runtime-worktree-selector'
+import { isReadOnlySessionView } from '../../../shared/workspace-session-history'
 
 const inFlightRetirements = new Map<string, Promise<boolean>>()
 
@@ -41,6 +42,9 @@ export function retireStructuredAgentSessionTab(args: {
   sessionId: string
   onError?: (error: unknown) => void
 }): Promise<boolean> {
+  if (isReadOnlySessionView(args.sessionId)) {
+    return Promise.resolve(true)
+  }
   retireStructuredAgentSessionReadOwner(args.sessionId, args.target)
   const key = retirementKey(args.target, args.worktreeId, args.sessionId)
   const existing = inFlightRetirements.get(key)
@@ -129,6 +133,9 @@ export function beginStructuredAgentSessionTabClose(args: {
   /** Main dropped the tab before the host answered: a host still listing the chat shows it again. */
   reopen?: () => void
 }): void {
+  if (isReadOnlySessionView(args.sessionId)) {
+    return
+  }
   if (args.provisional) {
     markStructuredAgentSessionLaunchCancelled(
       args.worktreeId,

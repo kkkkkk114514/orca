@@ -160,6 +160,7 @@ export function supportsBrowserPageFlag(commandPath: string[]): boolean {
       'jira',
       'linear',
       'skills',
+      'workflow',
       'search',
       'agent-context'
     ].includes(commandPath[0])

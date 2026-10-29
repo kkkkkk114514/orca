@@ -10,6 +10,7 @@ import {
 } from '@/runtime/structured-agent-session-owner'
 import { toRuntimeWorktreeSelector } from '@/runtime/runtime-worktree-selector'
 import type { Tab } from '../../../shared/tab-types'
+import { isReadOnlySessionView } from '../../../shared/workspace-session-history'
 
 export function findStructuredAgentSessionTab(
   unifiedTabsByWorktree: Readonly<Record<string, readonly Tab[]>>,
@@ -48,6 +49,9 @@ export function activateStructuredAgentSessionTab(args: {
   state.focusGroup(args.worktreeId, tab.groupId)
   state.activateTab(tab.id, { worktreeId: args.worktreeId })
   state.setActiveTabType('agent-session', args.worktreeId)
+  if (isReadOnlySessionView(tab.entityId)) {
+    return true
+  }
   requestNativeChatComposerFocus(tab.id)
   const environmentId = runtimeEnvironmentIdOrLocalUnlessTwin(state, args.worktreeId)
   void callRuntimeRpc(

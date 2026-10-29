@@ -1,5 +1,5 @@
 import React from 'react'
-import { BookOpen, CalendarClock, EyeOff, Files, Search, Smartphone } from 'lucide-react'
+import { BookOpen, CalendarClock, EyeOff, Files, Search, Smartphone, Workflow } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useAppStore } from '@/store'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,10 @@ import { HideSidebarMenu } from './sidebar-nav-controls'
 import { translate } from '@/i18n/i18n'
 import { lazyWithRetry } from '@/lib/lazy-with-retry'
 import type { GlobalSettings } from '../../../../shared/global-settings-types'
+import {
+  setAutomationWorkspaceView,
+  useAutomationWorkspaceView
+} from '../automations/automation-workspace-view'
 
 export function shouldShowMobileButton(
   settings: Partial<Pick<GlobalSettings, 'showMobileButton'>> | null | undefined
@@ -65,7 +69,9 @@ const SidebarNav = React.memo(function SidebarNav() {
   const showMobileButton = useAppStore((s) => shouldShowMobileButton(s.settings))
   const showArtifactsButton = useAppStore((s) => shouldShowArtifactsButton(s.settings))
   const showSkillsButton = useAppStore((s) => shouldShowSkillsButton(s.settings))
-  const automationsActive = activeView === 'automations'
+  const automationWorkspaceView = useAutomationWorkspaceView()
+  const automationsActive = activeView === 'automations' && automationWorkspaceView === 'schedules'
+  const workflowsActive = activeView === 'automations' && automationWorkspaceView === 'workflows'
   const mobileActive = activeView === 'mobile'
   const artifactsActive = activeView === 'artifacts'
   const skillsActive = activeView === 'skills'
@@ -182,7 +188,10 @@ const SidebarNav = React.memo(function SidebarNav() {
           <ContextMenuTrigger asChild>
             <button
               type="button"
-              onClick={openAutomationsPage}
+              onClick={() => {
+                setAutomationWorkspaceView('schedules')
+                openAutomationsPage()
+              }}
               aria-current={automationsActive ? 'page' : undefined}
               className={cn(
                 'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-[13px] font-medium tracking-tight transition-colors',
@@ -206,6 +215,29 @@ const SidebarNav = React.memo(function SidebarNav() {
           <HideSidebarMenu onHide={hideAutomationsButton} />
         </ContextMenu>
       ) : null}
+      <button
+        type="button"
+        onClick={() => {
+          setAutomationWorkspaceView('workflows')
+          openAutomationsPage()
+        }}
+        aria-current={workflowsActive ? 'page' : undefined}
+        className={cn(
+          'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm font-medium tracking-tight transition-colors',
+          workflowsActive
+            ? 'bg-worktree-sidebar-accent text-worktree-sidebar-accent-foreground'
+            : 'text-worktree-sidebar-foreground/60 hover:bg-worktree-sidebar-foreground/8'
+        )}
+      >
+        <Workflow
+          className={cn(
+            'size-4 shrink-0',
+            !workflowsActive && 'text-worktree-sidebar-foreground/30'
+          )}
+          strokeWidth={workflowsActive ? 2.25 : 1.75}
+        />
+        <span className="flex-1">{translate('workflows.nav', 'Workflows')}</span>
+      </button>
       {showAgentDashboardButton ? (
         <React.Suspense fallback={null}>
           <AgentDashboardSidebarEntry />

@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { OptionalFiniteNumber, OptionalString, requiredString } from './rpc-param-primitives'
+import { workflowNodeLaunchSchema } from '../workflow-node-launch'
 
 export const OptionalWorkerLaunchPreference = z
   .string()
@@ -29,6 +30,21 @@ export const WorkerStartParams = z
     agent: OptionalString,
     model: OptionalWorkerLaunchPreference,
     effort: OptionalWorkerLaunchPreference,
+    workflowLaunch: workflowNodeLaunchSchema.optional(),
+    workflowContext: z
+      .object({
+        nodeId: z
+          .string()
+          .min(1)
+          .max(64)
+          .regex(/^[a-zA-Z][a-zA-Z0-9_-]*$/),
+        previousDispatch: z
+          .string()
+          .regex(/^ctx_[a-zA-Z0-9_-]+$/)
+          .optional(),
+        continuation: z.string().min(1).max(64_000)
+      })
+      .optional(),
     retryOf: OptionalString,
     timeoutMs: OptionalFiniteNumber,
     devMode: z.boolean().optional()

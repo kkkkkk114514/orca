@@ -1,0 +1,71 @@
+.workflow-canvas {
+  --xy-background-color: var(--editor-surface);
+  --xy-background-pattern-dots-color: var(--border);
+  --xy-edge-stroke: var(--muted-foreground);
+  --xy-edge-stroke-selected: var(--foreground);
+  --xy-edge-stroke-width: 2;
+  --xy-connectionline-stroke: var(--foreground);
+  --xy-handle-background-color: var(--card);
+  --xy-handle-border-color: var(--muted-foreground);
+  --xy-controls-button-background-color: var(--card);
+  --xy-controls-button-background-color-hover: var(--accent);
+  --xy-controls-button-color: var(--foreground);
+  --xy-controls-button-border-color: var(--border);
+  --xy-minimap-background-color: var(--card);
+  --xy-node-color: var(--foreground);
+  --xy-node-border: none;
+  --xy-node-background-color: transparent;
+}
+
+.workflow-canvas .react-flow__handle {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+.workflow-canvas .workflow-port-success {
+  border-color: var(--status-success);
+}
+
+.workflow-canvas .workflow-port-failure {
+  border-color: var(--destructive);
+}
+
+.workflow-canvas .workflow-edge-success .react-flow__edge-path {
+  stroke: var(--status-success);
+}
+
+.workflow-canvas .workflow-edge-failure .react-flow__edge-path {
+  stroke: var(--destructive);
+  stroke-dasharray: 6 4;
+}
+
+.workflow-canvas .react-flow__edge.selected .react-flow__edge-path {
+  stroke: var(--foreground);
+  stroke-width: 3;
+}
+
+.workflow-canvas .react-flow__controls,
+.workflow-canvas .react-flow__minimap {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.workflow-canvas .react-flow__controls-button {
+  width: 30px;
+  height: 30px;
+  padding: 7px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+
+.workflow-canvas .react-flow__controls-button svg {
+  fill: currentColor;
+}
+
+.workflow-canvas .react-flow__attribution {
+  background: var(--card);
+  color: var(--muted-foreground);
+}

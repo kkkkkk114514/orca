@@ -36,6 +36,7 @@ import { requireWorkerAuthority, type WorkerEffect } from './worker-topology'
 import { prepareLocalWorkerStart } from './worker-start-validation'
 import { deliverAndSettleWorkerStartReadiness } from './worker-start-readiness-settlement'
 import type { WorkerStartMutation } from './worker-start-mutation'
+import type { WorkflowResolvedConversation } from '../../../../../../shared/workflow-node-conversation'
 
 export async function startLocalWorker(args: {
   params: WorkerStartInput
@@ -48,6 +49,7 @@ export async function startLocalWorker(args: {
   orchestrationMutation?: WorkerStartMutation
   /** Settings-driven; the executing host still gets to refuse below. */
   mode: WorkerStartModeReceipt
+  workflowConversation?: WorkflowResolvedConversation
 }): Promise<unknown> {
   const { runtime, db, run, coordinator, callerSession, existingTask, orchestrationMutation } = args
   // `--terminal` names a party: a chat by its `/clear` root address, as its Dispatch does.
@@ -190,6 +192,7 @@ export async function startLocalWorker(args: {
       mode,
       agent,
       launchPreferences: launch.preferences,
+      conversation: args.workflowConversation,
       effects,
       onStage: (stage) => {
         failedStage = stage

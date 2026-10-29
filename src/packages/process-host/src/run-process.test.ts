@@ -176,6 +176,28 @@ describe('stderr streaming', () => {
   })
 })
 
+describe('stdout observers', () => {
+  it('streams output before exit, including bytes beyond the capture limit', async () => {
+    const chunks: string[] = []
+    let settled = false
+    let observedBeforeExit = false
+    const result = await runProcess({
+      program: process.execPath,
+      args: ['-e', 'process.stdout.write("x".repeat(64)); setTimeout(() => {}, 100)'],
+      maxOutputBytes: 8,
+      onStdout: (chunk) => {
+        chunks.push(chunk.toString())
+        observedBeforeExit ||= !settled
+      }
+    }).finally(() => {
+      settled = true
+    })
+    expect(observedBeforeExit).toBe(true)
+    expect(chunks.join('')).toBe('x'.repeat(64))
+    expect(result.stdout).toBe('xxxxxxxx')
+  })
+})
+
 describe('unkillable children', () => {
   it('settles after the grace period rather than outliving its own deadline', async () => {
     // `close` only fires once the child is gone, so a child that ignores the

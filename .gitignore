@@ -27,6 +27,7 @@ dist-electron/
 out/
 /build/
 release/
+/desk/orca-windows-setup.exe
 native/**/.build/
 native/windows-cli-launcher/target/
 native/windows-agent-hook/target/

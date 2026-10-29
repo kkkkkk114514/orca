@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { useAppStore } from '@/store'
 import { activateAndRevealWorktree } from './worktree-activation'
 import { ensureWorktreeHasInitialTerminal } from './worktree-initial-terminal-seeding'
+import * as sessionResume from './resume-sleeping-agent-session'
 import {
   makeCreatedAgentWorktree as makeWorktree,
   seedEmptyActivatableWorktree
@@ -37,6 +38,22 @@ const setup = {
 // Why: a native-chat create used to land the user on a bare "Terminal 1" beside the chat,
 // because the returned setup script counted as work needing a shell to attach to.
 describe('seeding beside a caller-provided chat surface', () => {
+  it('opens a read-only record surface without restoring CLI sessions or seeding a terminal', () => {
+    const resume = vi
+      .spyOn(sessionResume, 'resumeSleepingAgentSessionsForWorktree')
+      .mockReturnValue(0)
+    const worktree = makeWorktree()
+    seedEmptyActivatableWorktree(worktree)
+    const result = activateAndRevealWorktree(worktree.id, {
+      providesInitialSurface: true,
+      restoreAgentSessions: false,
+      notifyHostRuntime: false
+    })
+    expect(result).not.toBe(false)
+    expect(resume).not.toHaveBeenCalled()
+    expect(useAppStore.getState().tabsByWorktree[worktree.id] ?? []).toHaveLength(0)
+  })
+
   it('runs a new-tab setup script without seeding a shell', () => {
     let createdIndex = 0
     const createTab = vi.fn(() => ({ id: `tab-${++createdIndex}` }))

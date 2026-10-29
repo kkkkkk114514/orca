@@ -4,6 +4,22 @@ const FILE_OPEN_FOCUS_HELP =
 
 /** Per-command flag help, kept out of the shared help chain it would crowd. */
 const COMMAND_SCOPED_FLAG_HELP: Record<string, Record<string, string>> = {
+  'workflow run': {
+    file: '--file <path>         Local workflow JSON file (or pass it positionally)',
+    state: '--state <path>        New local checkpoint file; parent directory must exist',
+    input: '--input <text>        Task supplied to every agent step',
+    'timeout-ms': '--timeout-ms <n>      Maximum wait duration; default 30000, at most 86400000'
+  },
+  'workflow resume': {
+    state: '--state <path>        Existing local checkpoint file (or pass it positionally)',
+    'timeout-ms': '--timeout-ms <n>      Maximum wait duration; default 30000, at most 86400000'
+  },
+  'workflow status': {
+    state: '--state <path>        Local checkpoint file (or pass it positionally)'
+  },
+  'workflow validate': {
+    file: '--file <path>         Local workflow JSON file (or pass it positionally)'
+  },
   'reference add': {
     url: '--url <url-or-jira-key> Full review/issue URL or Jira key; use positionals or repeated --url',
     'reference-site': '--reference-site <id> Jira site for bare keys; see orca jira connection'

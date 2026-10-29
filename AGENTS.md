@@ -18,6 +18,15 @@ Rebuild modified launch-policy code before running an app; stale build wrappers 
 
 Use the `$electron` skill and Playwright CDP for rendered Orca UI checks. Do not use computer-use for Orca UI validation.
 
+# Coding Approach
+
+Adapted from [andrej-karpathy-skills](https://github.com/multica-ai/andrej-karpathy-skills).
+
+- **Explain decisions before editing.** Identify assumptions, inspect relevant code, and describe meaningful tradeoffs. Clarify ambiguity that changes the intended behavior; use existing context and authorization for routine choices.
+- **Keep the solution small.** Implement the requested behavior with existing building blocks. Avoid speculative features, premature abstraction, and configuration without a concrete use case.
+- **Limit the diff.** Change only code needed for the task and follow its surrounding style. Remove anything made unused by your edits; report unrelated problems separately instead of expanding the refactor.
+- **Verify observable outcomes.** Define acceptance checks before implementation. Reproduce bugs before fixing them and test behavior changes at the appropriate boundary. For multi-step work, pair each step with a check and continue until it passes, or report the specific unresolved failure. Scale verification to the impact of the change.
+
 # Code Style
 
 ## Reuse Before Reimplementing

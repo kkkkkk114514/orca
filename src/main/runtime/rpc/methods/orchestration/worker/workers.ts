@@ -23,8 +23,20 @@ export const ORCHESTRATION_WORKER_START_METHODS = [
     params: WorkerStartParams,
     handler: async (
       params,
-      { runtime, orchestrationMutation, orchestrationCompatibilityEvidence, orchestrationCaller }
+      {
+        runtime,
+        orchestrationMutation,
+        orchestrationCompatibilityEvidence,
+        orchestrationCaller,
+        workflowConversation
+      }
     ) => {
+      if (params.workflowLaunch || params.workflowContext) {
+        throw new OrchestrationError(
+          'invalid_argument',
+          'Native workflow node settings require the canvas headless executor. Open this workflow in the canvas on an updated host.'
+        )
+      }
       if (!isWorkerStartTimeoutWithinTimerLimit(params.timeoutMs)) {
         throw new OrchestrationError(
           'invalid_argument',
@@ -88,6 +100,7 @@ export const ORCHESTRATION_WORKER_START_METHODS = [
         callerSession: orchestrationCaller,
         existingTask,
         orchestrationMutation,
+        workflowConversation,
         mode
       })
     }

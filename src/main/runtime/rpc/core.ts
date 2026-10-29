@@ -1,5 +1,6 @@
 // Why: single boundary between raw RPC frames and OrcaRuntimeService; keeps schema, handler, and result type on one object.
 import { ZodError, type ZodType } from 'zod'
+import type { WorkflowResolvedConversation } from '../../../shared/workflow-node-conversation'
 import type { TerminalStreamFrame } from '../../../shared/terminal-stream-protocol'
 import type { OrcaRuntimeService, OrchestrationCompatibilityCallerAuthority } from '../orca-runtime'
 import type { StructuredAgentCliSourceEvidence } from '../../native-chat/structured-agent-cli-source'
@@ -88,6 +89,8 @@ export type LegacyCoordinatorAuthorityProof = Readonly<{
 
 export type RpcContext = {
   runtime: OrcaRuntimeService
+  /** Host-resolved workflow history; never read from RPC parameters. */
+  workflowConversation?: WorkflowResolvedConversation
   // Why: lets long-poll handlers release immediately on client disconnect instead of running down timeoutMs. See design doc §3.1.
   signal?: AbortSignal
   // Why: per-WebSocket key so the server reaps a closing socket's subscriptions without touching sibling sockets sharing the deviceToken.

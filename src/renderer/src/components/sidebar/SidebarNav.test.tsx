@@ -10,6 +10,7 @@ import type { GlobalSettings } from '../../../../shared/global-settings-types'
 import type { Repo } from '../../../../shared/repo-types'
 import { i18n } from '../../i18n/i18n'
 import { PSEUDO_LOCALIZATION_LOCALE } from '../../i18n/pseudo-localization'
+import { setAutomationWorkspaceView } from '../automations/automation-workspace-view'
 
 const mocks = vi.hoisted(() => ({
   state: {} as Record<string, unknown>,
@@ -210,10 +211,25 @@ describe('SidebarNav', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks()
+    setAutomationWorkspaceView('schedules')
     await i18n.changeLanguage('en')
     mocks.hasPairedMobileDevice = false
     mocks.agentBucketCounts = { attention: 0, working: 0, done: 0, idle: 0 }
     setSidebarState()
+  })
+
+  it('switches between the workflow canvas and schedules through the existing route', async () => {
+    mocks.state.activeView = 'automations'
+    const container = await renderSidebarNav()
+    const workflows = getButtonByText(container, 'Workflows')
+    const schedules = getButtonByText(container, 'Automations')
+    await clickButton(workflows)
+    expect(mocks.openAutomationsPage).toHaveBeenCalledOnce()
+    expect(workflows.getAttribute('aria-current')).toBe('page')
+    expect(schedules.getAttribute('aria-current')).toBeNull()
+    await clickButton(schedules)
+    expect(schedules.getAttribute('aria-current')).toBe('page')
+    expect(workflows.getAttribute('aria-current')).toBeNull()
   })
 
   it('keeps the Agent Dashboard row unmounted while its experiment is off', async () => {

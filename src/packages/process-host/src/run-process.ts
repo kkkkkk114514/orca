@@ -116,6 +116,7 @@ export function runProcess(
 
     child.stdout?.on('data', (chunk: Buffer | string) => {
       stdout.write(chunk)
+      spec.onStdout?.(chunk)
       if (spec.killOnOutputLimit && stdout.truncated()) {
         stopAndSettle()
       }

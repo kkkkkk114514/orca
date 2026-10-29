@@ -13,6 +13,7 @@ export type WorktreeActivationSurfaceSelection = {
   agent?: TuiAgent | null
   /** A navigation caller is about to open its own editor, diff, or other non-terminal surface. */
   providesInitialSurface?: boolean
+  restoreAgentSessions?: boolean
   /** Set only where the user deliberately opened this existing workspace; absent keeps the shell seed. */
   navigationIntent?: 'user-open'
 }

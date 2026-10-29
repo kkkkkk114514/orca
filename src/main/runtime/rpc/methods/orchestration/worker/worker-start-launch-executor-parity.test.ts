@@ -16,6 +16,7 @@ import { WORKER_START_VOCABULARY } from '../../orchestration-worker-start-mode'
 import { structuredWorkerIdentities } from '../../../../structured-worker-identity'
 import type { WorkerEffect } from './worker-topology'
 import { WorkerStartParams } from '../../../../../../shared/rpc-contract/orchestration-worker-start-params'
+import type { WorkflowResolvedConversation } from '../../../../../../shared/workflow-node-conversation'
 
 const sessionCreate = vi.hoisted((): { refusal: { code: string } | null } => ({ refusal: null }))
 
@@ -75,7 +76,12 @@ function fakes() {
 
 function place(
   f: ReturnType<typeof fakes>,
-  args: { mode: AgentLaunchModeReceipt; existing?: boolean; terminal?: string }
+  args: {
+    mode: AgentLaunchModeReceipt
+    existing?: boolean
+    terminal?: string
+    conversation?: WorkflowResolvedConversation
+  }
 ) {
   return placeWorkerAgent({
     // oxlint-disable-next-line typescript/consistent-type-assertions -- SAFETY: the placement calls only the methods faked here.
@@ -96,6 +102,7 @@ function place(
     mode: args.mode,
     agent: args.terminal ? undefined : 'claude',
     launchPreferences: undefined,
+    conversation: args.conversation,
     effects: f.effects,
     onStage: (stage) => f.failedStages.push(stage)
   })
@@ -118,6 +125,30 @@ beforeEach(() => {
 })
 
 describe('a fresh worker through the launch executor', () => {
+  it('resumes selected CLI history through the existing terminal launcher without a new chat', async () => {
+    const f = fakes()
+    const placed = await place(f, {
+      mode: STRUCTURED,
+      existing: true,
+      conversation: {
+        key: 'a'.repeat(64),
+        workspaceId: EXISTING.id,
+        agent: 'claude',
+        sessionId: 'history-session'
+      }
+    })
+    expect(placed.mode.mode).toBe('terminal')
+    expect(f.runtime.createTerminal).toHaveBeenCalledWith(
+      'id:wt_existing',
+      expect.objectContaining({
+        command: expect.stringContaining('history-session'),
+        launchAgent: 'claude',
+        resumeProviderSession: { key: 'session_id', id: 'history-session' },
+        surfaceOwner: false
+      })
+    )
+  })
+
   it('fails a refused structured worker in an existing worktree instead of starting a terminal', async () => {
     const f = fakes()
     sessionCreate.refusal = { code: 'structured_agent_session_unsupported' }

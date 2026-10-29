@@ -20,6 +20,7 @@ import {
 } from './state-equality-files'
 import { shouldRetainStructuredAgentSessionLaunchTab } from '@/lib/structured-agent-session-launch-registry'
 import { executionHostIdForSessionTabsOwner } from '../local-structured-session-owner'
+import { isReadOnlySessionView } from '../../../../shared/workspace-session-history'
 
 export function prepareWebSessionTabsSnapshotBrowser(
   base: ReturnType<typeof prepareWebSessionTabsSnapshotBase>
@@ -179,6 +180,9 @@ export function prepareWebSessionTabsSnapshotBrowser(
   advanceWebSessionOpenFilesIndex(batchContext, nextOpenFiles, worktreeId)
   const retainedUnifiedTabs = currentUnifiedTabs.filter((tab) => {
     if (tab.contentType === 'agent-session') {
+      if (isReadOnlySessionView(tab.entityId)) {
+        return true
+      }
       // A matching host row is authoritative; retaining the provisional tab beside its mirror
       // would briefly render two panes before lifecycle publication is recorded.
       // A host that cannot list its chats is no evidence this one closed.

@@ -615,6 +615,15 @@ import {
   UsageCredentialApiKeyParams,
   UsageCredentialSessionCookieParams
 } from './usage-credentials-params'
+import {
+  WorkflowConversationsParams,
+  WorkflowNodeOptionsParams,
+  WorkflowRunId,
+  WorkflowRunStart,
+  WorkflowSessionControl,
+  WorkflowSessionRead,
+  WorkflowStorage
+} from './workflow-run-params'
 import { LayoutReopenHeldPanesParams } from './workspace-layout-held-panes-params'
 import {
   LayoutApplyParams,
@@ -660,6 +669,11 @@ import {
   SkillUploadChunkRequestSchema,
   SkillUploadCommitRequestSchema
 } from '../skill-upload-session-contract'
+import {
+  WorkspaceSessionArchive,
+  WorkspaceSessionRead,
+  WorkspaceSessionsList
+} from '../workspace-session-history'
 
 // Why: the host parses params with these schemas, so a client that matches this map
 // matches the dispatcher. Clients must import it for types only — parsing a params
@@ -1404,11 +1418,23 @@ export const RPC_PARAMS_BY_METHOD = {
   'updater.download': null,
   'updater.getStatus': null,
   'updater.install': null,
+  'workflow.conversations': WorkflowConversationsParams,
+  'workflow.nodeOptions': WorkflowNodeOptionsParams,
+  'workflow.pause': WorkflowRunId,
+  'workflow.resume': WorkflowRunId,
+  'workflow.session': WorkflowSessionRead,
+  'workflow.sessionControl': WorkflowSessionControl,
+  'workflow.show': WorkflowRunId,
+  'workflow.start': WorkflowRunStart,
+  'workflow.storage': WorkflowStorage,
   'workspacePorts.kill': WorkspacePortKillParams,
   'workspacePorts.killHost': WorkspacePortKillHostParams,
   'workspacePorts.probePage': WorkspacePortProbePageParams,
   'workspacePorts.scan': WorkspacePortScanParams,
   'workspacePorts.scanHost': WorkspacePortScanHostParams,
+  'workspaceSessions.archive': WorkspaceSessionArchive,
+  'workspaceSessions.list': WorkspaceSessionsList,
+  'workspaceSessions.read': WorkspaceSessionRead,
   'worktree.activate': WorktreeActivate,
   'worktree.adoptProvisionedRoot': WorktreeAdoptProvisionedRoot,
   'worktree.create': WorktreeCreate,

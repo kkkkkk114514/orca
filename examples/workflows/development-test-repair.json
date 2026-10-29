@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "name": "Development, test and repair",
+  "entry": "develop",
+  "maxSteps": 8,
+  "nodes": [
+    {
+      "id": "develop",
+      "type": "agent",
+      "agent": "dsh",
+      "prompt": "Implement the requested task in this workspace. When revisiting this step, use the latest test report to repair failures. Report the changed files, relevant checks and the code revision being handed to the tester.",
+      "onSuccess": "test",
+      "onFailure": "failed"
+    },
+    {
+      "id": "test",
+      "type": "agent",
+      "agent": "zcode",
+      "prompt": "Review and test the implementation handed over by the developer. Verify the code revision before testing. Report success only after the relevant checks pass. On failure, include the exact failing command, output and steps to reproduce so the developer can repair it.",
+      "onSuccess": "done",
+      "onFailure": "develop"
+    },
+    { "id": "done", "type": "end", "outcome": "succeeded" },
+    { "id": "failed", "type": "end", "outcome": "failed" }
+  ]
+}

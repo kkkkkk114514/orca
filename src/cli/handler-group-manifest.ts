@@ -276,5 +276,10 @@ export const HANDLER_GROUPS: readonly HandlerGroup[] = [
     name: 'search',
     keys: ['search'],
     load: async () => (await import('./handlers/search.js')).SEARCH_HANDLERS
+  },
+  {
+    name: 'workflow',
+    keys: ['workflow validate', 'workflow run', 'workflow resume', 'workflow status'],
+    load: async () => (await import('./handlers/workflow.js')).WORKFLOW_HANDLERS
   }
 ]

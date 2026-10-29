@@ -184,6 +184,48 @@ describe('applyWebSessionTabsSnapshot', () => {
     expect(patch.activeTabTypeByWorktree?.[WT]).toBe('terminal')
   })
 
+  it.each([
+    'workflow-view:00000000-0000-4000-8000-000000000001:develop',
+    `workspace-history:${'a'.repeat(64)}`
+  ])('preserves read-only record %s when the host publishes no provider sessions', (entityId) => {
+    const tab: Tab = {
+      id: 'workflow-record-tab',
+      entityId,
+      executionHostId: `runtime:${ENV}`,
+      worktreeId: WT,
+      groupId: 'record-group',
+      contentType: 'agent-session',
+      agentSessionAgent: 'codex',
+      label: 'Develop',
+      customLabel: null,
+      color: null,
+      sortOrder: 0,
+      createdAt: NOW
+    }
+    const state = makeState({
+      activeTabId: tab.id,
+      activeTabIdByWorktree: { [WT]: tab.id },
+      activeTabType: 'agent-session',
+      activeTabTypeByWorktree: { [WT]: 'agent-session' },
+      unifiedTabsByWorktree: { [WT]: [tab] },
+      tabBarOrderByWorktree: { [WT]: [tab.id] },
+      activeGroupIdByWorktree: { [WT]: tab.groupId },
+      groupsByWorktree: {
+        [WT]: [{ id: tab.groupId, worktreeId: WT, activeTabId: tab.id, tabOrder: [tab.id] }]
+      }
+    })
+    const patch = applyWebSessionTabsSnapshot(
+      state,
+      makeSnapshot([], { activeTabType: null }),
+      ENV,
+      NOW
+    )
+    const next = { ...state, ...patch }
+    expect(next.unifiedTabsByWorktree[WT]).toEqual([tab])
+    expect(next.groupsByWorktree[WT]?.some((group) => group.tabOrder.includes(tab.id))).toBe(true)
+    expect(next.activeTabTypeByWorktree[WT]).toBe('agent-session')
+  })
+
   it('ignores stale or duplicate same-epoch snapshots after a newer version was applied', () => {
     const state = makeState()
     const newer = makeSnapshot([], { snapshotVersion: 3, activeTabType: null })

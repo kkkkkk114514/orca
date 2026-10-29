@@ -14,6 +14,8 @@ import type { WorktreeCardPresentation } from './worktree-card-presentation'
 import { WorktreeCardSshHostControl } from './WorktreeCardSshHostControl'
 import { WorktreeTitleInlineRename } from './WorktreeTitleInlineRename'
 import type { WorktreeCardController } from './use-worktree-card-controller'
+import { WorktreeWorkflowButton } from './WorktreeWorkflowButton'
+import { getRepoExecutionHostId } from '../../../../shared/execution-host'
 
 // Why: pinned and compact inline project cues share this chip so both read as the same affordance.
 function RepoIdentityChip({
@@ -322,6 +324,18 @@ export function WorktreeCardHeader({
             </Tooltip>
           )}
         </div>
+      )}
+      {!affiliateListMode && (
+        <WorktreeWorkflowButton
+          worktreeId={worktree.id}
+          label={visibleCardTitle}
+          executionHostId={worktree.hostId ?? (repo ? getRepoExecutionHostId(repo) : undefined)}
+          disabled={isDeleting || isRuntimeDisconnected}
+          onOpened={() => {
+            card.onWorktreeCardClick?.()
+            card.onActivate?.()
+          }}
+        />
       )}
     </div>
   )

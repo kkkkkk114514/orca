@@ -4,6 +4,13 @@ import type { TuiAgent } from '../../../../../../shared/tui-agent'
 import type { OrcaRuntimeService } from '../../../../orca-runtime'
 import type { OrchestrationDb } from '../../../../orchestration/db'
 import { createStructuredWorkerSession } from '../../orchestration-structured-worker-session'
+import type { WorkflowResolvedConversation } from '../../../../../../shared/workflow-node-conversation'
+import { isAiVaultAgent } from '../../../../../../shared/ai-vault-types'
+import { isResumableTuiAgent } from '../../../../../../shared/agent-session-resume'
+import { getAiVaultAgentProviderSession } from '../../../../../../shared/ai-vault-resume-startup'
+import { resolveAgentStartupPlanInputs } from '../../../../../../shared/agent-startup-plan-inputs'
+import { buildAgentResumeStartupPlan } from '../../../../../../shared/tui-agent-startup'
+import { isTuiAgentEnabled } from '../../../../../../shared/tui-agent-selection'
 
 export type WorkerEffect = {
   kind: 'worktree' | 'terminal' | 'setup' | 'dispatch_input'
@@ -60,14 +67,67 @@ export async function createExistingWorktreeWorkerTerminal(args: {
   worktreeId: string
   agent: TuiAgent
   launchPreferences?: AgentLaunchPreferences
+  conversation?: WorkflowResolvedConversation
   taskId: string
   effects: WorkerEffect[]
 }): Promise<{ handle: string; warning?: string }> {
+  const conversation = args.conversation
+  if (
+    conversation &&
+    !isTuiAgentEnabled(args.agent, args.runtime.getClientSettings().disabledTuiAgents)
+  ) {
+    throw new Error(`The ${args.agent} agent is disabled.`)
+  }
+  const providerSession =
+    conversation && isAiVaultAgent(args.agent)
+      ? getAiVaultAgentProviderSession({
+          agent: args.agent,
+          sessionId: conversation.sessionId,
+          filePath: conversation.transcriptPath
+        })
+      : undefined
+  if (
+    conversation &&
+    (conversation.workspaceId !== args.worktreeId ||
+      conversation.agent !== args.agent ||
+      !providerSession ||
+      !isResumableTuiAgent(args.agent))
+  ) {
+    throw new Error('Selected conversation cannot be resumed by this worker in this workspace.')
+  }
+  const startup =
+    conversation && providerSession && isResumableTuiAgent(args.agent)
+      ? buildAgentResumeStartupPlan({
+          ...resolveAgentStartupPlanInputs({
+            agent: args.agent,
+            settings: args.runtime.getClientSettings(),
+            platform: process.platform,
+            shell: undefined,
+            isRemote: false,
+            sessionOptions: narrowStructuredLaunchSeedOptions(args.launchPreferences)
+          }),
+          agent: args.agent,
+          providerSession,
+          resumeInLaunchCwd: true
+        })
+      : undefined
+  if (conversation && !startup) {
+    throw new Error('This CLI cannot resume the selected conversation.')
+  }
   const terminal = await args.runtime.createTerminal(`id:${args.worktreeId}`, {
     // Why: the agent id is not a shell command — `cursor` resolves to the Cursor
     // desktop app while its CLI is `cursor-agent`. Let the runtime build the
     // configured launcher instead of executing the raw id.
-    startupAgent: args.agent,
+    ...(startup
+      ? {
+          command: startup.launchCommand,
+          env: startup.env,
+          launchConfig: startup.launchConfig,
+          launchAgent: args.agent,
+          resumeProviderSession: providerSession ?? undefined,
+          startupCommandDelivery: startup.startupCommandDelivery
+        }
+      : { startupAgent: args.agent }),
     launchSource: 'orchestration',
     ...(args.launchPreferences ? { launchPreferences: args.launchPreferences } : {}),
     title: `worker-${args.taskId}`,
